@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>ThermaCharge AI</title>
+<style>
+:root{--bg:#060a12;--card:rgba(255,255,255,.045);--bd:rgba(255,255,255,.1);--tx:#e6edf8;--mu:#8798b5;--ac:#2de2e6;--ok:#34d399;--wa:#fbbf24;--cr:#fb6f6f;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{height:100%;margin:0}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:radial-gradient(900px 520px at 85% -10%,#0c4a6e55,transparent),var(--bg);color:var(--tx);font:14px/1.55 "Segoe UI",system-ui,-apple-system,sans-serif}
+nav{width:226px;position:fixed;top:0;bottom:0;padding:18px 10px;border-right:1px solid var(--bd);background:#080e1a;overflow:auto;z-index:5}
+nav .br{font-weight:700;font-size:17px;padding:4px 10px 16px;color:var(--ac)}
+nav a{display:block;padding:8px 12px;border-radius:10px;color:var(--mu);text-decoration:none;white-space:nowrap}
+nav a:hover{background:var(--card);color:var(--tx)}nav a.on{background:rgba(45,226,230,.12);color:var(--ac)}
+main{margin-left:226px;padding:24px 28px 40px;max-width:1160px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.cr{color:var(--mu);font-size:12px;margin-bottom:4px}h1{margin:0 0 18px;font-size:26px;letter-spacing:-.3px}h2{font-size:16px;margin:0 0 10px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;backdrop-filter:blur(8px);margin-bottom:14px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}.g .c{margin:0}
+.two{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:14px;align-items:start}.eq{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.k{color:var(--mu);font-size:12px}.big{font-size:26px;font-weight:700;line-height:1.2}.hero{font-size:56px;font-weight:800;letter-spacing:-2px;line-height:1.05}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;border:1px solid currentColor}
+.row{margin-bottom:11px}.row label{display:flex;justify-content:space-between;font-size:13px}.row b{color:var(--ac)}input[type=range]{width:100%;accent-color:#2de2e6}
+.bt{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;cursor:pointer;font:inherit;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--ac)}.btn.p,.btn.on{background:var(--ac);color:#04121a;border-color:var(--ac);font-weight:700}
+.ch{width:100%;height:auto;display:block}table{width:100%;border-collapse:collapse}td,th{padding:9px 8px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mu);font-weight:600}
+.bar{height:10px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin:3px 0 10px}.bar i{display:block;height:100%}
+.ban{border-color:var(--wa);background:rgba(251,191,36,.1)}.step{display:flex;gap:12px;align-items:flex-start}.step span{font-size:22px}.arr{text-align:center;color:var(--ac);margin:-6px 0 6px}
+.fan{transform-origin:center;transform-box:fill-box;animation:sp var(--d,3s) linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.fan{animation:none}}
+@media(max-width:860px){nav{top:auto;width:100%;height:auto;display:flex;overflow-x:auto;border-right:0;border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}nav .br{display:none}
+main{margin-left:0;padding:16px 14px 90px}.two,.eq{grid-template-columns:1fr}.hero{font-size:38px}}
+</style></head><body><nav id="nav"></nav><main id="main"></main><script src="api.js"></script>
+<script>
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),f1=v=>(+v).toFixed(1),$=s=>document.querySelector(s);
+const NAV=[['','Home','🏠'],['simulator','Simulator','⚡'],['recommendation','AI Recommendation','🤖'],['thermal-monitoring','Thermal Monitoring','🌡️'],['cooling','Smart Cooling','❄️'],['battery-health','Battery Health','🔋'],['comparison','Comparison','📊'],['analytics','Analytics','📈'],['alerts','Alerts','🚨'],['how-it-works','How It Works','ℹ️'],['about','About','📚']];
+const C=[['temp','Battery Temperature','°C',15,60,.1],['soc','State of Charge (SOC)','%',0,100,1],['soh','State of Health (SOH)','%',50,100,1],['volt','Battery Voltage','V',300,500,1],['cur','Charging Current','A',0,400,1],['amb','Ambient Temperature','°C',10,50,.1],['maxP','Maximum Charger Power','kW',20,200,1]];
+const DEF={temp:28,soc:20,soh:90,volt:400,cur:200,amb:30,maxP:120,mode:'ai',running:false};
+let S={...DEF},H=[],A=[],last='',demoOn=false,demoT=null,R;
+try{const j=JSON.parse(localStorage.getItem('tc')||'null');if(j){S={...S,...j.S,running:false};H=j.H||[];A=j.A||[]}}catch(e){}
+const save=()=>{try{localStorage.setItem('tc',JSON.stringify({S,H,A}))}catch(e){}};
+/* ===== AI engine (rule-based). Replace calc() with a Python ML API call later. ===== */
+function calc(s,pw){
+ const tf=s.temp<30?1:s.temp<40?1-(s.temp-30)*.025:s.temp<45?.75-(s.temp-40)*.07:.1;
+ const sf=s.soc<50?1:s.soc<80?1-(s.soc-50)*.01:.7-(s.soc-80)*.025;
+ const hf=.7+.3*(s.soh-50)/50,af=s.amb<30?1:1-(s.amb-30)*.012;
+ let b=s.mode==='fast'?s.maxP:s.maxP*tf*sf*hf*af;
+ const prot=s.temp>45,p=pw!=null?pw:Math.round(clamp(prot?s.maxP*.1:b,0,s.maxP));
+ const pred=+(s.temp+p/40*(1.5-s.soh/200)+(s.amb-25)*.05).toFixed(1);
+ const risk=prot||pred>=45?'CRITICAL':pred>=42?'HIGH':pred>=35?'MEDIUM':'LOW';
+ const cool=Math.round(clamp((pred-28)/20*100,0,100)),cl=pred<35?['Normal Cooling','LOW']:pred<42?['Active Cooling','HIGH']:['Emergency Cooling','MAX'];
+ const kwh=75*s.soh/100*(100-s.soc)/100,time=p>1?Math.round(kwh/(p*.92)*60):null;
+ const prt=Math.round(clamp(100-Math.max(0,pred-30)*3-(100-s.soh)*.3,5,99)),deg=Math.round(clamp((pred-30)*3.2+(100-s.soh)*.5+p/s.maxP*12,2,98));
+ const eff=Math.round(clamp(97-Math.max(0,pred-30)*.45,70,97)),mode=prot?'THERMAL PROTECTION':s.mode==='fast'?'FAST CHARGE':'AI SMART CHARGE';
+ const why=[];if(s.temp>=30)why.push('temperature');if(s.soc>=50)why.push('high SOC');if(s.soh<90)why.push('reduced SOH');if(s.amb>=30)why.push('hot ambient air');
+ const ex=prot?`High battery temperature detected (${f1(s.temp)}°C). Thermal protection mode is active and charging power is cut to ${p} kW to protect the battery.`:
+ `Battery temperature is ${f1(s.temp)}°C and SOH is ${s.soh}%. To prevent excessive heat and degradation, the system recommends ${p<s.maxP?`reducing charging power from ${s.maxP} kW to ${p} kW`:`using the full ${p} kW`}${why.length&&p<s.maxP?` (factors: ${why.join(', ')})`:''}.`;
+ const act=risk==='LOW'?'Full adaptive charging continues':risk==='MEDIUM'?'Charging power reduced, active cooling on':'Thermal protection engaged, emergency cooling';
+ const warn=s.mode==='fast'&&!prot?`⚠ Fast Charge is ON. Full ${p} kW ignores battery heat and may push temperature to ${f1(pred)}°C, which speeds up battery wear. Switch to AI Smart Charge to protect the battery.`:'';
+ const cx=`AI predicts that battery temperature may reach ${f1(pred)}°C within ${pred>s.temp?'10':'15'} minutes. ${risk==='LOW'?'Conditions are safe; normal cooling is enough.':`Charging power should be reduced and ${cl[1].toLowerCase()} cooling is recommended.`}`;
+ return{p,pred,risk,cool,cl,time,prt,deg,eff,mode,ex,act,cx,kwh,warn,energy:+(kwh/(eff/100)).toFixed(1),prot};
+}
+const col={LOW:'var(--ok)',MEDIUM:'var(--wa)',HIGH:'var(--cr)',CRITICAL:'var(--cr)'},tc=t=>t<35?'var(--ok)':t<=42?'var(--wa)':'var(--cr)';
+function log(rep){R=calc(S);const pt={t:Date.now(),temp:S.temp,p:R.p,amb:S.amb,soc:S.soc,soh:S.soh,pred:R.pred};
+ if(rep&&H.length)H[H.length-1]=pt;else H.push(pt);if(H.length>60)H.shift();
+ if(R.risk!==last){last=R.risk;A.unshift({t:Date.now(),type:R.risk==='LOW'?'SAFE':R.risk==='MEDIUM'?'WARNING':'CRITICAL',temp:S.temp,p:R.p,act:R.act});A=A.slice(0,30)}save()}
+function seed(){H=[];for(let i=0;i<24;i++){const t=S.temp-(23-i)*.2,r=calc({...S,temp:t});H.push({t:Date.now()-(23-i)*30000,temp:t,p:r.p,amb:S.amb,soc:Math.max(0,S.soc-(23-i)*.3),soh:S.soh,pred:r.pred})}}
+if(S.mode!=='fast')S.mode='ai';if(H.length<2)seed();log(true);
+function tick(){if(!S.running)return;R=calc(S);S.temp=clamp(S.temp+(R.pred-S.temp)*.12-R.cool/100*.3,15,60);S.soc=clamp(S.soc+R.p*30/3600/(75*S.soh/100)*100,0,100);if(S.soc>=100)S.running=false;log(false);refresh()}
+setInterval(tick,1000);
+/* ===== chart helpers ===== */
+function line(ser,o={}){const W=520,Hh=170,all=ser.flatMap(s=>s.d);let mn=o.min!=null?o.min:Math.min(...all),mx=o.max!=null?o.max:Math.max(...all);if(mx-mn<1){mx+=1;mn-=1}
+ const n=ser[0].d.length,X=i=>10+i*(W-20)/Math.max(1,n-1),Y=v=>Hh-16-(v-mn)/(mx-mn)*(Hh-30);let g='';
+ (o.zones||[]).forEach(z=>{const a=Y(clamp(z[1],mn,mx)),b=Y(clamp(z[0],mn,mx));if(b>a)g+=`<rect x="0" y="${a}" width="${W}" height="${b-a}" fill="${z[2]}" opacity=".13"/>`});
+ return `<svg viewBox="0 0 ${W} ${Hh}" class="ch" role="img" aria-label="${o.t||'chart'}">${g}<text x="12" y="12" fill="#8798b5" font-size="10">${f1(mx)}${o.u||''}</text><text x="12" y="${Hh-3}" fill="#8798b5" font-size="10">${f1(mn)}${o.u||''}</text>`+
+ ser.map(s=>`<polyline fill="none" stroke="${s.c}" stroke-width="2.5" stroke-linejoin="round" points="${s.d.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`).join('')+'</svg>'}
+const chart=(t,ser,o={})=>`<div class="c"><h2>${t}</h2>${line(ser,{...o,t})}${ser.length>1?`<div class="k">${ser.map(s=>`<span style="color:${s.c}">● ${s.n}</span>`).join(' &nbsp; ')}</div>`:''}</div>`;
+function gauge(v,max,unit,c,lab){const a=Math.PI*(1-clamp(v/max,0,1)),x=110+90*Math.cos(a),y=110-90*Math.sin(a);
+ return `<svg viewBox="0 0 220 135" class="ch" style="max-width:300px;margin:auto" role="img" aria-label="${lab}"><path d="M20 110A90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="16" stroke-linecap="round"/><path d="M20 110A90 90 0 0 1 ${x} ${y}" fill="none" stroke="${c}" stroke-width="16" stroke-linecap="round"/><text x="110" y="100" text-anchor="middle" font-size="32" font-weight="700" fill="#e6edf8">${v}</text><text x="110" y="124" text-anchor="middle" font-size="12" fill="#8798b5">${unit} · ${lab}</text><text x="14" y="130" font-size="10" fill="#8798b5">0</text><text x="190" y="130" font-size="10" fill="#8798b5">${max}</text></svg>`}
+const st=(l,v,s,c)=>`<div class="c"><div class="k">${l}</div><div class="big" style="color:${c||'var(--tx)'}">${v}</div><div class="k">${s||'&nbsp;'}</div></div>`;
+const pill=r=>`<span class="pill" style="color:${col[r]}">${r}</span>`,tm=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const bar=(l,v,max,c,u)=>`<div class="k">${l}: <b style="color:var(--tx)">${v}${u}</b></div><div class="bar"><i style="width:${clamp(v/max*100,2,100)}%;background:${c}"></i></div>`;
+const T=H=>H.map(h=>h.temp),ZN=[[0,35,'#34d399'],[35,42,'#fbbf24'],[42,70,'#fb6f6f']];
+const tmin=m=>m==null?'—':m+' min';
+/* ===== pages ===== */
+const P={};
+P['']=()=>`<div class="two" style="grid-template-columns:1.2fr 1fr;align-items:center"><div><div class="hero">ThermaCharge AI</div><p style="font-size:19px;margin:10px 0">Fast Charging. Smarter Cooling. Longer Battery Life.</p><p class="k" style="font-size:14px;max-width:520px">ThermaCharge AI monitors EV battery conditions and dynamically adjusts charging power to reduce overheating and battery degradation while maintaining efficient charging.</p>
+<div class="bt"><a class="btn p" href="#/simulator">Launch Simulator</a><a class="btn" href="#/analytics">Explore Analytics</a><a class="btn" href="#/how-it-works">How It Works</a><button class="btn" data-a="demo">▶ Run Demo Scenario</button></div></div>
+<div class="c" style="text-align:center"><svg viewBox="0 0 260 150" class="ch" role="img" aria-label="EV battery charging"><rect x="20" y="40" width="200" height="80" rx="14" fill="none" stroke="#2de2e6" stroke-width="3"/><rect x="220" y="68" width="14" height="24" rx="4" fill="#2de2e6"/>${[0,1,2,3,4].map(i=>`<rect x="30" y="50" width="${i<3?30:30}" height="60" rx="5" fill="${i<3?'#34d399':i==3?'#fbbf24':'#ffffff22'}" transform="translate(${i*38} 0)"/>`).join('')}<path d="M118 62l-18 30h16l-6 22 24-34h-16z" fill="#04121a"/></svg><div class="k">Monitor → Predict → Analyze → Optimize → Cool → Protect</div></div></div>
+<div class="g" style="margin-top:14px">${[['⚡','Adaptive Fast Charging','Power rises when the pack is cool and healthy, and eases off as heat builds.','simulator'],['🌡️','Thermal Risk Prediction','Predicts the next temperature before it happens.','thermal-monitoring'],['🔋','Battery Protection','Scores every decision for battery safety and degradation risk.','battery-health']].map(x=>`<a href="#/${x[3]}" style="text-decoration:none;color:inherit"><div class="c"><div class="big">${x[0]}</div><h2>${x[1]}</h2><div class="k">${x[2]}</div></div></a>`).join('')}</div>`;
+const resPanel=()=>{const r=R;return (r.warn?`<div class="c" style="border-color:var(--cr);background:rgba(251,111,111,.1)">${r.warn}</div>`:'')+`<div class="c" style="text-align:center">${gauge(r.p,S.maxP,'kW',col[r.risk],'recommended')}<div style="margin-top:6px">${pill(r.risk)} <span class="pill" style="color:var(--ac)">${r.mode}</span></div></div>
+<div class="g">${st('Predicted temperature',f1(r.pred)+'°C','now '+f1(S.temp)+'°C',tc(r.pred))}${st('Charging time',tmin(r.time),'to 100%')}${st('Protection score',r.prt+'%','',r.prt>75?'var(--ok)':'var(--wa)')}${st('Degradation risk',r.deg+'%','',r.deg<35?'var(--ok)':r.deg<60?'var(--wa)':'var(--cr)')}</div>
+<div class="c"><h2>AI decision</h2><div>${r.ex}</div><div class="k" style="margin-top:8px">SOC ${f1(S.soc)}%</div><div class="bar"><i style="width:${S.soc}%;background:var(--ac)"></i></div></div>`};
+P.simulator=()=>`<div class="two"><div class="c">${C.map(([k,l,u,a,b,s])=>`<div class="row"><label for="r-${k}">${l}<b id="v-${k}"></b></label><input type="range" id="r-${k}" data-k="${k}" min="${a}" max="${b}" step="${s}"></div>`).join('')}
+<div class="bt"><button class="btn p" data-a="start">▶ Start Simulation</button><button class="btn" data-a="pause">⏸ Pause</button><button class="btn" data-a="reset">↺ Reset</button></div>
+<div class="bt"><button class="btn" data-m="ai">🤖 AI Smart Charge</button><button class="btn" data-m="fast">⚡ Fast Charge</button></div><p class="k">AI Smart Charge starts at high power, then lowers it gradually as the battery heats up. Fast Charge keeps full power and shows a battery warning.</p><div class="bt"><button class="btn" data-a="demo">★ Run Demo Scenario</button><button class="btn p" data-a="save">💾 Save Run</button></div><p class="k" id="run"></p></div><div id="res"></div></div>`;
+function updSim(){C.forEach(([k,,u])=>{const r=$('#r-'+k);if(r&&document.activeElement!==r)r.value=S[k];const v=$('#v-'+k);if(v)v.textContent=f1(S[k])+' '+u});
+ document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));const e=$('#res');if(e)e.innerHTML=resPanel();const r=$('#run');if(r)r.textContent=S.running?'Simulation running… temperature and SOC update live.':'Simulation paused. Move a slider or press Start.'}
+P.recommendation=()=>`<div class="c" style="text-align:center"><div class="k">Recommended Charging Power</div><div class="hero" style="color:${col[R.risk]}">${R.p} kW</div>${gauge(R.p,200,'kW',col[R.risk],'0–200 kW scale')}</div>
+<div class="g">${st('Charging mode',R.mode,'',R.prot?'var(--cr)':'var(--ac)')}${st('Thermal risk',R.risk,'',col[R.risk])}${st('Battery protection',R.prt+'%')}${st('Predicted temperature',f1(R.pred)+'°C')}${st('Estimated charging time',tmin(R.time))}</div><div class="c"><h2>Why did AI choose this power?</h2><p>${R.ex}</p><p class="k">Inputs used: temperature ${f1(S.temp)}°C, SOC ${f1(S.soc)}%, SOH ${S.soh}%, ambient ${f1(S.amb)}°C, ${S.volt} V, ${S.cur} A, charger limit ${S.maxP} kW.</p></div>`;
+P['thermal-monitoring']=()=>`<div class="g">${st('Current temperature',f1(S.temp)+'°C','',tc(S.temp))}${st('Predicted temperature',f1(R.pred)+'°C','',tc(R.pred))}${st('Thermal risk',R.risk,'',col[R.risk])}${st('Cooling requirement',R.cool+'%')}</div>
+<div class="eq"><div class="c" style="text-align:center"><h2>Battery temperature gauge</h2>${gauge(+f1(S.temp),60,'°C',tc(S.temp),'battery')}<div class="k">🟢 Safe &lt; 35°C · 🟡 Warning 35–42°C · 🔴 Critical &gt; 42°C</div></div>
+${chart('Battery temperature vs time',[{d:T(H),c:'#2de2e6',n:'Temp °C'}],{zones:ZN,u:'°'})}</div><div class="eq">${chart('Charging power vs time',[{d:H.map(h=>h.p),c:'#a78bfa',n:'kW'}],{u:' kW',min:0})}${chart('Ambient temperature vs time',[{d:H.map(h=>h.amb),c:'#fbbf24',n:'°C'}],{u:'°'})}</div>`;
+P.cooling=()=>{const d=R.cl[1]==='LOW'?5:R.cl[1]==='HIGH'?1.6:.6;return `<div class="g">${st('Current temperature',f1(S.temp)+'°C')}${st('Predicted temperature',f1(R.pred)+'°C','',tc(R.pred))}${st('Cooling requirement',R.cool+'%')}${st('Cooling level',R.cl[1],R.cl[0],col[R.cl[1]==='LOW'?'LOW':R.cl[1]==='HIGH'?'MEDIUM':'CRITICAL'])}</div>
+<div class="c ${R.risk==='LOW'?'':'ban'}">🤖 ${R.cx}</div><div class="c" style="text-align:center"><svg viewBox="0 0 300 110" class="ch" style="max-width:520px;margin:auto" role="img" aria-label="Cooling system animation"><rect x="90" y="25" width="120" height="60" rx="10" fill="none" stroke="#2de2e6" stroke-width="3"/><text x="150" y="60" text-anchor="middle" fill="${tc(S.temp)}" font-size="16" font-weight="700">${f1(S.temp)}°C</text>${[40,260].map(x=>`<g class="fan" style="--d:${d}s"><circle cx="${x}" cy="55" r="22" fill="none" stroke="#2de2e655"/><path d="M${x} 55v-20M${x} 55l17 10M${x} 55l-17 10" stroke="#2de2e6" stroke-width="5" stroke-linecap="round"/></g>`).join('')}</svg></div>
+<div class="g">${[['Normal Cooling','For low temperature (&lt; 35°C)','LOW'],['Active Cooling','For rising temperature (35–42°C)','HIGH'],['Emergency Cooling','For critical temperature (&gt; 42°C)','MAX']].map(m=>`<div class="c" style="${R.cl[1]===m[2]?'border-color:var(--ac)':''}"><h2>${m[0]} ${R.cl[1]===m[2]?'<span class="pill" style="color:var(--ac)">ACTIVE</span>':''}</h2><div class="k">${m[1]}</div></div>`).join('')}</div>`};
+P['battery-health']=()=>{const avg=H.reduce((a,h)=>a+h.temp,0)/H.length,ev=H.filter(h=>h.temp>42).length,cy=Math.round((100-S.soh)*60),life=clamp((S.soh-70)/(2.2+Math.max(0,avg-25)*.12),0,15);
+ const tr=[...Array(13)].map((_,i)=>100-(100-S.soh)*Math.pow(i/12,1.1)),bt=[25,30,35,40,45].map(t=>+(.8+Math.pow(t-25,1.6)*.03).toFixed(2));
+ return `<div class="g">${st('State of Health',S.soh+'%')}${st('Battery capacity',f1(75*S.soh/100)+' kWh','of 75 kWh new')}${st('Charging cycles',cy)}${st('Average temperature',f1(avg)+'°C')}${st('High-temp events',ev)}${st('Estimated remaining life',f1(life)+' yrs')}${st('Degradation',f1(100-S.soh)+'%')}</div>
+<div class="eq">${chart('Battery health trend (SOH % over cycles)',[{d:tr,c:'#34d399',n:'SOH %'}],{u:'%'})}<div class="c"><h2>Temperature vs degradation (% per 100 cycles)</h2>${[25,30,35,40,45].map((t,i)=>bar(t+'°C charging',bt[i],2.6,i<2?'var(--ok)':i<4?'var(--wa)':'var(--cr)',' %')).join('')}<div class="k">Repeated high-temperature charging speeds up degradation.</div></div></div>
+<div class="c"><h2>Estimated battery life: ${f1(life)} years</h2><div class="k">Simulated from SOH and average charging temperature. Cooler charging extends life.</div></div>`};
+P.comparison=()=>{const v=calc(S,S.maxP),a=R,rows=[['Charging time',tmin(v.time),tmin(a.time)],['Maximum temperature',f1(v.pred)+'°C',f1(a.pred)+'°C'],['Thermal risk',pill(v.risk),pill(a.risk)],['Battery degradation',v.deg+'%',a.deg+'%'],['Battery protection',v.prt+'%',a.prt+'%'],['Charging efficiency',v.eff+'%',a.eff+'%'],['Energy usage',v.energy+' kWh',a.energy+' kWh']];
+ return `<div class="c"><table><tr><th>Metric</th><th>Conventional (${S.maxP} kW)</th><th style="color:var(--ac)">ThermaCharge AI (${a.p} kW)</th></tr>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table></div>
+<div class="eq"><div class="c"><h2>Maximum temperature</h2>${bar('Conventional',f1(v.pred),60,'var(--cr)','°C')}${bar('ThermaCharge AI',f1(a.pred),60,'var(--ac)','°C')}<h2>Degradation risk</h2>${bar('Conventional',v.deg,100,'var(--cr)','%')}${bar('ThermaCharge AI',a.deg,100,'var(--ac)','%')}</div>
+<div class="c"><h2>Charging power</h2>${bar('Conventional',S.maxP,200,'var(--cr)',' kW')}${bar('ThermaCharge AI',a.p,200,'var(--ac)',' kW')}<h2>Protection score</h2>${bar('Conventional',v.prt,100,'var(--wa)','%')}${bar('ThermaCharge AI',a.prt,100,'var(--ok)','%')}</div></div>
+<div class="c ban">ThermaCharge AI provides a better balance between charging speed and battery protection.</div>`};
+P.analytics=()=>{const e=H.reduce((a,h)=>a+h.p*30/3600,0);return `<div class="g">${st('⚡ Energy delivered',f1(e)+' kWh')}${st('⏱️ Charging time',f1(H.length*.5)+' min','simulated')}${st('🌡️ Max temperature',f1(Math.max(...T(H)))+'°C',' ',tc(Math.max(...T(H))))}${st('🔋 Battery health',S.soh+'%')}${st('📉 Degradation risk',R.deg+'%')}${st('🛡️ Protection score',R.prt+'%')}</div>
+<div class="eq">${chart('Charging power history',[{d:H.map(h=>h.p),c:'#a78bfa',n:'kW'}],{u:' kW',min:0})}${chart('Temperature history',[{d:T(H),c:'#2de2e6',n:'Actual'},{d:H.map(h=>h.pred),c:'#fbbf24',n:'Predicted'}],{u:'°',zones:ZN})}${chart('SOC progress',[{d:H.map(h=>h.soc),c:'#34d399',n:'SOC %'}],{u:'%',min:0,max:100})}${chart('Degradation trend',[{d:H.map(h=>Math.round(clamp((h.pred-30)*3.2+(100-h.soh)*.5+h.p/S.maxP*12,2,98))),c:'#fb6f6f',n:'Risk %'}],{u:'%',min:0})}</div>
+<div class="c"><h2>Simulation history</h2><table><tr><th>Time</th><th>Temp</th><th>Power</th><th>SOC</th></tr>${H.slice(-6).reverse().map(h=>`<tr><td>${tm(h.t)}</td><td>${f1(h.temp)}°C</td><td>${h.p} kW</td><td>${f1(h.soc)}%</td></tr>`).join('')}</table></div>`};
+P.alerts=()=>{const ic={SAFE:'🟢',WARNING:'🟡',CRITICAL:'🔴'},tx={SAFE:'Battery temperature is within the safe range.',WARNING:'Battery temperature is increasing. Charging power has been reduced.',CRITICAL:'Battery temperature is too high. Thermal protection mode activated.'};
+ return `<div class="c ${R.risk==='LOW'?'':'ban'}"><b>Now:</b> ${pill(R.risk)} ${tx[R.risk==='LOW'?'SAFE':R.risk==='MEDIUM'?'WARNING':'CRITICAL']}</div><div class="c">${A.length?`<table><tr><th>Time</th><th>Type</th><th>Temp</th><th>Power</th><th>Action taken</th></tr>${A.map(a=>`<tr><td>${tm(a.t)}</td><td>${ic[a.type]} ${a.type}</td><td>${f1(a.temp)}°C</td><td>${a.p} kW</td><td>${a.act}</td></tr>`).join('')}</table>`:'<p class="k">No alerts yet. Open the simulator and raise the temperature to trigger one.</p>'}</div>`};
+P['how-it-works']=()=>{const s=[['📡','Battery Sensors','Measure temperature, voltage, current and SOC.'],['🗄️','Battery Data Collection','Readings are combined with SOH and ambient temperature.'],['🧠','AI Temperature Prediction','Estimates the temperature a few minutes ahead.'],['⚠️','Thermal Risk Analysis','Classifies the pack as low, medium, high or critical.'],['⚡','Charging Power Optimization','Chooses the highest power that stays safe.'],['❄️','Smart Cooling Recommendation','Picks normal, active or emergency cooling.'],['🛡️','Battery Protection','Scores protection and degradation risk.']];
+ return s.map((x,i)=>`<div class="c step"><span>${x[0]}</span><div><h2>${x[1]}</h2><div class="k">${x[2]}</div></div></div>${i<6?'<div class="arr">↓</div>':''}`).join('')+`<div class="g"><div class="c"><h2>Inputs</h2><div class="k">Temperature, SOC, SOH, voltage, current, ambient temperature</div></div><div class="c"><h2>AI processing</h2><div class="k">Temperature prediction + risk calculation + charging optimization</div></div><div class="c"><h2>Outputs</h2><div class="k">Recommended power, cooling level, charging time, protection score, degradation risk</div></div></div>`};
+P.about=()=>`<div class="eq"><div class="c"><h2>Problem</h2><p>Fast charging can generate excessive heat, which may accelerate battery degradation.</p></div><div class="c"><h2>Solution</h2><p>ThermaCharge AI dynamically adjusts charging power according to the battery's current thermal condition.</p></div></div><div class="c"><h2>Key innovation</h2><p>Instead of using one fixed charging profile for every battery, the system adapts charging according to individual battery conditions.</p></div>
+<div class="c"><h2>Technology</h2><div class="bt">${['AI / Machine Learning','Python (planned ML API)','JavaScript UI','Battery Data','Data Visualization','Simulation'].map(t=>`<span class="pill" style="color:var(--ac)">${t}</span>`).join('')}</div><p class="k">The AI rules live in one function, calc(), so a Python ML model can replace it later.</p></div><div class="c ban">This project is a software simulation/prototype and does not directly control a physical EV charger.</div>`;
+/* ===== shell ===== */
+const key=()=>{const r=location.hash.replace('#/','');return P[r]?r:''};
+$('#nav').innerHTML='<div class="br">⚡ ThermaCharge AI</div>'+NAV.map(n=>`<a href="#/${n[0]}" data-n="${n[0]}">${n[2]} ${n[1]}</a>`).join('');
+function render(){const k=key();document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.n===k));
+ const nm=NAV.find(n=>n[0]===k)[1],ban=demoOn?`<div class="c ban">🤖 High battery temperature detected. Charging power has been automatically reduced to protect the battery. <b>Now: ${R.p} kW at ${f1(S.temp)}°C</b></div>`:'';
+ $('#main').innerHTML=(k?`<div class="cr"><a href="#/" style="color:var(--mu)">Home</a> / ${nm}</div><h1>${nm}</h1>`:'')+ban+(R.warn&&k!=='simulator'?`<div class="c" style="border-color:var(--cr);background:rgba(251,111,111,.1)">${R.warn}</div>`:'')+P[k]();if(k==='simulator')updSim();window.scrollTo(0,0)}
+function refresh(){if(key()==='simulator')updSim();else{const y=window.scrollY;render();window.scrollTo(0,y)}}
+function demo(){clearTimeout(demoT);demoOn=true;S={...S,temp:34,soc:32,soh:81,amb:34,maxP:120,mode:'ai',running:false};seed();A=[];last='';log(false);location.hash='#/simulator';render();
+ [38,42].forEach((t,i)=>demoT=setTimeout(()=>{S.temp=t;log(false);refresh();if(i===1){S.running=true;refresh()}},2500*(i+1)))}
+addEventListener('hashchange',render);
+document.addEventListener('input',e=>{const k=e.target.dataset.k;if(k){S[k]=+e.target.value;log(true);updSim()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-m]');if(!b)return;const a=b.dataset.a;
+ if(b.dataset.m){S.mode=b.dataset.m;log(true)}else if(a==='start')S.running=true;else if(a==='pause')S.running=false;
+ else if(a==='reset'){clearTimeout(demoT);demoOn=false;S={...DEF};seed();A=[];last='';log(false)}else if(a==='demo')return demo();refresh()});
+render();
+document.addEventListener('click',async e=>{if(!e.target.closest('[data-a="save"]'))return;
+ const toast=m=>{let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:80px;right:20px;background:#111a2b;border:1px solid var(--ac);color:var(--tx);padding:10px 14px;border-radius:10px;z-index:9';document.body.append(t)}t.textContent=m;t.hidden=false;setTimeout(()=>t.hidden=true,3000)};
+ if(typeof api==='undefined'||!sessionStorage.getItem('token'))return toast('Log in first (open the app from the login page) to save runs.');
+ const r=calc(S);
+ try{await api('/runs',{method:'POST',body:{name:'Run '+new Date().toLocaleString(),mode:S.mode,temp:+S.temp.toFixed(1),soc:+S.soc.toFixed(1),soh:S.soh,volt:S.volt,cur:S.cur,amb:+S.amb.toFixed(1),max_power:S.maxP,rec_power:r.p,pred_temp:Math.max(0,r.pred),risk:r.risk,charge_time_min:r.time,protection_score:r.prt,degradation_risk:r.deg}});toast('Run saved to your dashboard.')}catch(err){toast(err.message)}});
+</script></body></html>

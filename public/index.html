@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThermaCharge AI – Login</title><link rel="stylesheet" href="style.css"></head><body>
+<main class="card">
+  <h1>⚡ ThermaCharge AI</h1><p class="sub" id="sub">Log in to open your dashboard.</p>
+  <form id="form" novalidate>
+    <div id="nameRow" hidden><label for="name">Name</label><input id="name" autocomplete="name"></div>
+    <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+    <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required>
+    <button id="btn" type="submit">Login</button>
+    <div id="msg" class="msg" role="alert"></div>
+  </form>
+  <p class="switch" id="sw">New here? <a id="toggle" tabindex="0" role="button">Create an account</a></p>
+</main>
+<script src="app.js"></script></body></html>

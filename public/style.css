@@ -1,0 +1,17 @@
+:root{--bg:#060a12;--card:rgba(255,255,255,.05);--bd:rgba(255,255,255,.12);--tx:#e6edf8;--mu:#8798b5;--ac:#2de2e6;--cr:#fb6f6f;--ok:#34d399;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(800px 480px at 80% -10%,#0c4a6e66,transparent),var(--bg);color:var(--tx);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:26px;backdrop-filter:blur(8px)}
+.card.wide{max-width:720px}h1{margin:0 0 4px;font-size:24px}p.sub{color:var(--mu);margin:0 0 18px}
+label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}
+input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--bd);background:#0b1220;color:var(--tx);font:inherit}
+input:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button,.btn{width:100%;margin-top:18px;padding:12px;border:0;border-radius:10px;background:var(--ac);color:#04121a;font:700 15px inherit;cursor:pointer;text-decoration:none;display:block;text-align:center}
+button:disabled{opacity:.6;cursor:wait}button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.msg{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:14px;display:none}
+.msg.err{display:block;background:rgba(251,111,111,.12);color:var(--cr)}.msg.ok{display:block;background:rgba(52,211,153,.12);color:var(--ok)}
+.switch{text-align:center;margin-top:16px;color:var(--mu)}.switch a{color:var(--ac);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+.stat{border:1px solid var(--bd);border-radius:14px;padding:14px}.stat small{color:var(--mu)}.stat div{font-size:20px;font-weight:700;margin-top:2px;word-break:break-word}
+.run{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-top:8px}
+.acts{display:flex;gap:6px}button.sm{width:auto;margin:0;padding:6px 10px;font-size:13px}h2{font-size:16px;margin:22px 0 4px}
